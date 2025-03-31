@@ -4,7 +4,6 @@ import Booking from "../Models/Booking.js";
 import Airline from "../Models/Airline.js";
 import { Op } from "sequelize"; // Import Sequelize operators
 
-// ✅ Get Ticket by ID
 export const getTicket = async (req, res) => {
   const { id } = req.params; // Extract ID from request URL
 
@@ -16,8 +15,15 @@ export const getTicket = async (req, res) => {
   }
 
   try {
-    // Find ticket by Primary Key (ID)
+   
     const ticket = await Ticket.findByPk(id, { include: Flight });
+
+    /*
+    SELECT Tickets.*, Flights.*
+FROM Tickets
+LEFT JOIN Flights ON Tickets.flightId = Flights.id
+WHERE Tickets.id = provided_id;
+*/
 
     if (!ticket) {
       console.log("❌ Ticket not found in database.");
@@ -26,8 +32,10 @@ export const getTicket = async (req, res) => {
 
     console.log("✅ Ticket found:", ticket.toJSON());
 
-    // Find all bookings associated with this ticket
+  
     const bookings = await Booking.findAll({ where: { ticketId: ticket.id } });
+
+//SELECT * FROM Bookings WHERE ticketId = provided_ticketId;
 
     const flightsData = {};
 
@@ -53,7 +61,8 @@ export const getTicket = async (req, res) => {
   }
 };
 
-// ✅ Get Single Ticket for Verification
+
+
 export const getSingleTicketForVerification = async (req, res) => {
   const { id } = req.params;
 
@@ -67,12 +76,21 @@ export const getSingleTicketForVerification = async (req, res) => {
   try {
     const booking = await Booking.findByPk(id);
 
+    //SELECT * FROM Bookings WHERE id = provided_id LIMIT 1;
+
     if (!booking) {
       console.log("❌ Booking not found.");
       return res.status(404).json({ success: false, message: "Booking not found" });
     }
 
     const flight = await Flight.findByPk(booking.flightId, { include: Airline });
+
+    /*
+    SELECT Flights.*, Airlines.airlineLogo, Airlines.airlineName
+FROM Flights
+JOIN Airlines ON Flights.airlineId = Airlines.id
+WHERE Flights.id = provided_flightId;
+*/
 
     if (!flight) {
       console.log("❌ Flight not found.");

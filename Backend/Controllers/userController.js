@@ -7,23 +7,28 @@ export const registerUser = async (req, res) => {
     const { email, username, password } = req.body;
   
     try {
-      // Check if the email already exists
       const existingUser = await User.findOne({ where: { email } });
   
+      //SELECT * FROM Users WHERE email = 'provided_email' LIMIT 1;
+
       if (existingUser) {
         return res.status(400).json({ message: "User already exists. Please log in." });
       }
   
-      // Hash the password
+     
       const hashedPassword = await bcrypt.hash(password, 10);
   
-      // Create a new user
+     
       const newUser = await User.create({
         email,
         username,
         password: hashedPassword,
       });
-  
+
+  /*
+  INSERT INTO Users (email, username, password)
+VALUES ('provided_email', 'provided_username', 'hashed_password');
+*/
       res.status(201).json({ message: "User registered successfully", userId: newUser.id });
     } catch (error) {
       console.error("Error registering user:", error);
@@ -33,7 +38,7 @@ export const registerUser = async (req, res) => {
   export const loginUser = async (req, res) => {
     const { email, password } = req.body;
     
-    // Validate input
+   
     if (!email || !password) {
       return res.status(400).json({ message: "Email and password are required." });
     }
@@ -41,6 +46,8 @@ export const registerUser = async (req, res) => {
     try {
       const user = await User.findOne({ where: { email } });
       
+      //SELECT * FROM Users WHERE email = 'provided_email' LIMIT 1;
+
       if (!user) {
         return res.status(400).json({ message: "Invalid email or password" });
       }
@@ -75,17 +82,25 @@ export const registerUser = async (req, res) => {
         include: [
           {
             model: Booking,
-            attributes: ["id", "flightId", "seat", "ticketId"], // ✅ Include ticketId directly
+            attributes: ["id", "flightId", "seat", "ticketId"], 
             include: [
               {
                 model: Ticket,
-                attributes: ["id", "uid"], // ✅ Fetch Ticket details correctly
+                attributes: ["id", "uid"], 
               },
             ],
           },
         ],
       });
-  
+  /*
+  SELECT Users.id, Users.email, Users.username, 
+       Bookings.id AS bookingId, Bookings.flightId, Bookings.seat, Bookings.ticketId, 
+       Tickets.id AS ticketId, Tickets.uid
+FROM Users
+LEFT JOIN Bookings ON Users.id = Bookings.userId
+LEFT JOIN Tickets ON Bookings.ticketId = Tickets.id
+WHERE Users.id = provided_userId;
+*/
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
@@ -93,9 +108,9 @@ export const registerUser = async (req, res) => {
       // Extract ticket IDs from bookings
       const tickets = user.Bookings.map((booking) => ({
         bookingId: booking.id,
-        ticketId: booking.ticketId, // ✅ Use ticketId from Booking table
-        uid: booking.Ticket ? booking.Ticket.uid : null, // ✅ Fetch Ticket UID properly
-      })).filter((ticket) => ticket.ticketId); // ✅ Remove null tickets
+        ticketId: booking.ticketId, 
+        uid: booking.Ticket ? booking.Ticket.uid : null, 
+      })).filter((ticket) => ticket.ticketId); 
   
       res.status(200).json({
         message: "User details fetched successfully",
@@ -104,7 +119,7 @@ export const registerUser = async (req, res) => {
           email: user.email,
           username: user.username,
         },
-        tickets, // ✅ Send correct ticket details
+        tickets, 
       });
     } catch (error) {
       console.error("Error fetching user details:", error);

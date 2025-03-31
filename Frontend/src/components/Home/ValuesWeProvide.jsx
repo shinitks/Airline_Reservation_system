@@ -44,7 +44,7 @@ const ValuesWeProvide = () => {
           <h1 className="text-xl font-bold mt-2">Safety & Security</h1>
           <p className="text-sm text-center mt-1">
           Your safety is our priority with trusted airlines
-=          </p>
+         </p>
         </div>
         {/* ------------------------------- */}
         <div className="flex justify-center items-center flex-col max-w-[200px]">

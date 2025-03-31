@@ -2,7 +2,6 @@ import Flight from "../Models/Flight.js";
 import Airline from "../Models/Airline.js";
 import { Sequelize } from "sequelize";
 
-// Get flights based on search criteria
 export const getFlights = async (req, res) => {
   const { from, to, departDate } = req.body;
 
@@ -11,15 +10,22 @@ export const getFlights = async (req, res) => {
       where: { from, to, departDate },
       include: {
         model: Airline,
-        attributes: ["airlineLogo", "airlineName"], // Fetch airline details
+        attributes: ["airlineLogo", "airlineName"], 
       },
     });
-
+/*
+SELECT Flights.*, Airlines.airlineLogo, Airlines.airlineName
+FROM Flights
+JOIN Airlines ON Flights.airlineId = Airlines.id
+WHERE Flights.from = 'provided_from'
+AND Flights.to = 'provided_to'
+AND Flights.departDate = 'provided_departDate';
+*/
     if (flights.length === 0) {
       return res.status(404).json({ status: false, message: "No flights found" });
     }
 
-    // Convert Sequelize objects to JSON format
+  
     const flightsWithAirlineInfo = flights.map((flight) => ({
       ...flight.toJSON(),
       airlineLogo: flight.Airline.airlineLogo,
@@ -32,12 +38,14 @@ export const getFlights = async (req, res) => {
   }
 };
 
-// Add a new airline
+
 export const addAirline = async (req, res) => {
   const { airlineLogo, airlineName } = req.body;
 
   try {
     const existingAirline = await Airline.findOne({ where: { airlineName } });
+
+//SELECT * FROM Airlines WHERE airlineName = 'provided_airlineName' LIMIT 1;
 
     if (existingAirline) {
       return res.status(400).json({ message: "Airline already exists" });
@@ -50,9 +58,13 @@ export const addAirline = async (req, res) => {
     console.error("Error adding airline:", error);
     res.status(500).json({ message: "Internal server error" });
   }
+  /*
+  INSERT INTO Airlines (airlineLogo, airlineName)
+VALUES ('provided_airlineLogo', 'provided_airlineName');
+*/
 };
 
-// Add a new flight
+
 export const addFlight = async (req, res) => {
   const { from, to, departDate, arriveDate, departTime, arriveTime, airlineUid, price } = req.body;
 
@@ -62,7 +74,9 @@ export const addFlight = async (req, res) => {
       return res.status(404).json({ message: "Airline not found" });
     }
 
-    // Using transaction for atomic operation
+//SELECT * FROM Airlines WHERE id = provided_airlineUid LIMIT 1;
+
+    
     const newFlight = await Flight.create({
       airlineId: airline.id, // Use foreign key airlineId
       from,
@@ -80,8 +94,13 @@ export const addFlight = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+/*
+INSERT INTO Flights (airlineId, `from`, `to`, departDate, arriveDate, departTime, arriveTime, price)
+VALUES (provided_airlineId, 'provided_from', 'provided_to', 'provided_departDate', 'provided_arriveDate', 
+        'provided_departTime', 'provided_arriveTime', provided_price);
+*/
 
-// Get a single flight by ID
+
 export const getSingleFlight = async (req, res) => {
   const { id } = req.params;
 
@@ -89,10 +108,15 @@ export const getSingleFlight = async (req, res) => {
     const flight = await Flight.findByPk(id, {
       include: {
         model: Airline,
-        attributes: ["airlineLogo", "airlineName"], // Fetch related airline details
+        attributes: ["airlineLogo", "airlineName"], 
       },
     });
-
+/*
+SELECT Flights.*, Airlines.airlineLogo, Airlines.airlineName
+FROM Flights
+JOIN Airlines ON Flights.airlineId = Airlines.id
+WHERE Flights.id = provided_id;
+*/
     if (!flight) {
       return res.status(404).json({ status: false, message: "Flight not found" });
     }
@@ -118,4 +142,7 @@ export const getAllAirlines = async (req, res) => {
     console.error("Error fetching airlines:", error);
     res.status(500).json({ message: "Internal server error" });
   }
+  
+  //SELECT * FROM Airlines;
+
 };

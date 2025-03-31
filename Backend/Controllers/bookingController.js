@@ -4,7 +4,13 @@ import { Booking, User, Flight, Ticket } from "../Models/index.js";
 export const getCheckoutSession = async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id);
+
+    //SELECT * FROM Users WHERE id = provided_userId LIMIT 1;
+
     const flight = await Flight.findByPk(req.params.flightId);
+
+    //SELECT * FROM Flights WHERE id = provided_flightId LIMIT 1;
+
 
     if (!flight) {
       return res.status(404).json({ success: false, message: "Flight not found" });
@@ -15,9 +21,12 @@ export const getCheckoutSession = async (req, res) => {
 
     const { bookingUsersData, selectedSeats } = req.body;
     
-    // Generate a unique ticket for this booking
+   
     const bookingUID = generateUID();
     let ticket = await Ticket.create({ uid: bookingUID });
+
+    //INSERT INTO Tickets (uid) VALUES ('generated_uid');
+
 
     const bookings = [];
     for (let i = 1; i <= Object.keys(bookingUsersData).length; i++) {
@@ -27,7 +36,7 @@ export const getCheckoutSession = async (req, res) => {
       const booking = await Booking.create({
         flightId: flight.id,
         userId: user.user_id,
-        ticketId: ticket.id, // ✅ Store the ticketId inside Booking table
+        ticketId: ticket.id, 
         seat,
         fName: userData.firstName,
         lName: userData.lastName,
@@ -41,8 +50,12 @@ export const getCheckoutSession = async (req, res) => {
 
       bookings.push(booking.id);
     }
-
-    // ✅ Update the Ticket model with bookingId (optional but recommended)
+/*
+INSERT INTO Bookings (flightId, userId, ticketId, seat, fName, lName, dob, passportNumber, state, phoneNumber, email, passportSizePhoto)
+VALUES (provided_flightId, provided_userId, provided_ticketId, 'provided_seat', 'provided_fName', 'provided_lName', 
+        'provided_dob', 'provided_passportNumber', 'provided_state', 'provided_phoneNumber', 'provided_email', 'provided_passportSizePhoto');
+*/
+    
     await ticket.update({ bookingId: bookings[0] });
 
     flight.bookedSeats = [...flight.bookedSeats, ...selectedSeats];

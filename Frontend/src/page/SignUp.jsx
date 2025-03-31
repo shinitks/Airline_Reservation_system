@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { BACKENDURL } from "../Config/Config";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -7,7 +7,7 @@ import "react-toastify/dist/ReactToastify.css";
 const SignUp = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    name: "",
+    username: "",
     email: "",
     password: "",
   });
@@ -28,15 +28,7 @@ const SignUp = () => {
     for (const key in formData) {
       if (!formData[key]) {
         toast.error(
-          `${
-            key === "name"
-              ? "Full Name"
-              : key === "email"
-              ? "Email"
-              : key === "password"
-              ? "Password"
-              : key
-          } is required`
+          `${key === "username" ? "Username" : key === "email" ? "Email" : "Password"} is required`
         );
         return;
       } else if (key === "email" && !emailRegex.test(formData.email)) {
@@ -64,23 +56,18 @@ const SignUp = () => {
       const data = await response.json();
 
       if (response.ok) {
-        // Successful registration
         toast.success(data.message);
         setFormData({
-          name: "",
+          username: "",
           email: "",
           password: "",
         });
-
-        // Redirect to login page
         navigate("/login");
       } else {
-        // Error response from backend
         toast.error(data.error);
       }
     } catch (error) {
       console.log(error);
-      // Handle network or other errors
       toast.error("An error occurred. Please try again later.");
     }
   };
@@ -96,18 +83,18 @@ const SignUp = () => {
             <form className="space-y-4 md:space-y-6">
               <div>
                 <label
-                  htmlFor="name"
+                  htmlFor="username"
                   className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                 >
-                  Full name
+                  Username
                 </label>
                 <input
                   type="text"
-                  name="name"
-                  id="name"
+                  name="username"
+                  id="username"
                   className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                  placeholder="someone@domain.com"
-                  required=""
+                  placeholder="Enter your username"
+                  required
                   onChange={handleFormDataChange}
                 />
               </div>
@@ -124,7 +111,7 @@ const SignUp = () => {
                   id="email"
                   className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                   placeholder="someone@domain.com"
-                  required=""
+                  required
                   onChange={handleFormDataChange}
                 />
               </div>
@@ -139,9 +126,9 @@ const SignUp = () => {
                   type="password"
                   name="password"
                   id="password"
-                  placeholder="password"
+                  placeholder="Enter your password"
                   className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                  required=""
+                  required
                   onChange={handleFormDataChange}
                 />
               </div>
@@ -152,7 +139,7 @@ const SignUp = () => {
                 Signup
               </button>
               <p className="text-sm font-light text-gray-500 dark:text-gray-400">
-                Allready have an account?{" "}
+                Already have an account? {" "}
                 <Link
                   to={"/login"}
                   className="font-medium text-blue-600 hover:underline dark:text-blue-500"
