@@ -110,7 +110,7 @@ Start the frontend server:
 
 * `POST /api/user/register` \- Register a new user
 
-* `POST /api/auth/login` \- Log in a user
+* `POST /api/user/login` \- Log in a user
 
 * `POST /api/admin/register` \- Register a new admin
 
@@ -176,5 +176,5 @@ This project is open-source and available under the MIT License.
 
 ## **Contact**
 
-For any issues or inquiries, please reach out via GitHub or email at support@example.com.
+For any issues or inquiries, please reach out via GitHub or email at shinitks7@gmail.com.
 
