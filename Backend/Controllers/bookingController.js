@@ -1,42 +1,32 @@
 import Stripe from "stripe";
-import { Booking, User, Flight, Ticket } from "../Models/index.js";
+import { Booking, User, Flight, Ticket, BookedSeat } from "../Models/index.js";
 
 export const getCheckoutSession = async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id);
-
-    //SELECT * FROM Users WHERE id = provided_userId LIMIT 1;
-
     const flight = await Flight.findByPk(req.params.flightId);
-
-    //SELECT * FROM Flights WHERE id = provided_flightId LIMIT 1;
-
 
     if (!flight) {
       return res.status(404).json({ success: false, message: "Flight not found" });
     }
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-    console.log("Received req.body:", req.body);
-
     const { bookingUsersData, selectedSeats } = req.body;
-    
-   
+
     const bookingUID = generateUID();
     let ticket = await Ticket.create({ uid: bookingUID });
 
-    //INSERT INTO Tickets (uid) VALUES ('generated_uid');
-
-
     const bookings = [];
+
     for (let i = 1; i <= Object.keys(bookingUsersData).length; i++) {
       const userData = bookingUsersData[`passenger${i}`];
       const seat = selectedSeats[i - 1];
 
+      // Create the booking record
       const booking = await Booking.create({
         flightId: flight.id,
         userId: user.user_id,
-        ticketId: ticket.id, 
+        ticketId: ticket.id,
         seat,
         fName: userData.firstName,
         lName: userData.lastName,
@@ -48,18 +38,18 @@ export const getCheckoutSession = async (req, res) => {
         passportSizePhoto: userData.passportSizePhoto,
       });
 
+      // Insert into BookedSeat table
+      await BookedSeat.create({
+        flightId: flight.id,
+        seatNumber: seat,
+      });
+
       bookings.push(booking.id);
     }
-/*
-INSERT INTO Bookings (flightId, userId, ticketId, seat, fName, lName, dob, passportNumber, state, phoneNumber, email, passportSizePhoto)
-VALUES (provided_flightId, provided_userId, provided_ticketId, 'provided_seat', 'provided_fName', 'provided_lName', 
-        'provided_dob', 'provided_passportNumber', 'provided_state', 'provided_phoneNumber', 'provided_email', 'provided_passportSizePhoto');
-*/
-    
+
     await ticket.update({ bookingId: bookings[0] });
 
-    flight.bookedSeats = [...flight.bookedSeats, ...selectedSeats];
-    await flight.save();
+    // No need to update flight.bookedSeats anymore
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -90,7 +80,6 @@ VALUES (provided_flightId, provided_userId, provided_ticketId, 'provided_seat', 
   }
 };
 
-// Function to generate a unique Ticket UID
 function generateUID() {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   let uid = "";

@@ -3,9 +3,9 @@ import sequelize from "../config/db.js"; // Import your database connection
 
 const Airline = sequelize.define("Airline", {
   id: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4, // Automatically generates UUIDs
     primaryKey: true,
-    autoIncrement: true,
   },
   airlineLogo: {
     type: DataTypes.STRING,
@@ -15,6 +15,8 @@ const Airline = sequelize.define("Airline", {
     type: DataTypes.STRING,
     allowNull: false,
   },
+}, {
+  timestamps: true, // createdAt and updatedAt will be managed automatically
 });
 
 export default Airline;

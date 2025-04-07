@@ -37,10 +37,10 @@ const Flight = sequelize.define("Flight", {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
-  bookedSeats: {
-    type: DataTypes.ARRAY(DataTypes.STRING),
-    defaultValue: [],
-  },
+  // bookedSeats: {
+  //   type: DataTypes.ARRAY(DataTypes.STRING),
+  //   defaultValue: [],
+  // },
 });
 
 // **Define the association**

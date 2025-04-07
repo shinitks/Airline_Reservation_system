@@ -3,6 +3,7 @@ import User from "./User.js";
 import Flight from "./Flight.js";
 import Booking from "./Booking.js";
 import Ticket from "./Ticket.js";
+import BookedSeat from "./BookedSeat.js";
 
 // Define relationships
 User.hasMany(Booking, { foreignKey: "userId" });
@@ -15,4 +16,4 @@ Booking.hasMany(Ticket, { foreignKey: "bookingId" });
 Ticket.belongsTo(Booking, { foreignKey: "bookingId" });
 
 
-export { sequelize, User, Flight, Booking, Ticket };
+export { sequelize, User, Flight, Booking, Ticket, BookedSeat };

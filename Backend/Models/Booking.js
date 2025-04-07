@@ -1,8 +1,8 @@
 import { DataTypes } from "sequelize";
-import sequelize from "../config/db.js"; // Ensure this points to your database connection
+import sequelize from "../config/db.js";
 import Flight from "./Flight.js";
 import User from "./User.js";
-import Ticket from "./Ticket.js"; // Import Ticket model
+import Ticket from "./Ticket.js";
 
 const Booking = sequelize.define("Booking", {
   id: {
@@ -46,7 +46,7 @@ const Booking = sequelize.define("Booking", {
     type: DataTypes.STRING,
     allowNull: true,
   },
-  ticketId: {  // ADD THIS FIELD
+  ticketId: {
     type: DataTypes.UUID,
     allowNull: false,
     references: {
@@ -54,11 +54,31 @@ const Booking = sequelize.define("Booking", {
       key: "id",
     },
   },
+  flightId: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    references: {
+      model: Flight,
+      key: "id",
+    },
+  },
+  userId: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    references: {
+      model: User,
+      key: "user_id", // If your User model uses `user_id` as PK
+    },
+  },
 });
 
-// Define relationships
+// Associations
 Booking.belongsTo(Flight, { foreignKey: "flightId" });
 Booking.belongsTo(User, { foreignKey: "userId" });
-Booking.belongsTo(Ticket, { foreignKey: "ticketId" }); // Ensure Booking is linked to Ticket
+Booking.belongsTo(Ticket, { foreignKey: "ticketId" });
+
+Flight.hasMany(Booking, { foreignKey: "flightId" });
+User.hasMany(Booking, { foreignKey: "userId" });
+Ticket.hasMany(Booking, { foreignKey: "ticketId" });
 
 export default Booking;
