@@ -4,7 +4,13 @@ import { Booking, User, Flight, Ticket, BookedSeat } from "../Models/index.js";
 export const getCheckoutSession = async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id);
+
+    //SELECT * FROM Users WHERE id = provided_userId LIMIT 1;
+
     const flight = await Flight.findByPk(req.params.flightId);
+
+    //SELECT * FROM Flights WHERE id = provided_flightId LIMIT 1;
+
 
     if (!flight) {
       return res.status(404).json({ success: false, message: "Flight not found" });
@@ -15,6 +21,8 @@ export const getCheckoutSession = async (req, res) => {
 
     const bookingUID = generateUID();
     let ticket = await Ticket.create({ uid: bookingUID });
+
+    //INSERT INTO Tickets (uid) VALUES ('generated_uid');
 
     const bookings = [];
 
@@ -37,7 +45,16 @@ export const getCheckoutSession = async (req, res) => {
         email: userData.email,
         passportSizePhoto: userData.passportSizePhoto,
       });
-
+/*
+INSERT INTO Bookings (flightId, userId, ticketId, seat, fName,
+lName, dob, passportNumber, state, phoneNumber, email,
+passportSizePhoto)
+VALUES (provided_flightId, provided_userId, provided_ticketId,
+'provided_seat', 'provided_fName', 'provided_lName',
+'provided_dob', 'provided_passportNumber',
+'provided_state', 'provided_phoneNumber', 'provided_email',
+'provided_passportSizePhoto');
+*/
       // Insert into BookedSeat table
       await BookedSeat.create({
         flightId: flight.id,
@@ -46,6 +63,12 @@ export const getCheckoutSession = async (req, res) => {
 
       bookings.push(booking.id);
     }
+
+    /*
+    INSERT INTO "BookedSeat" ("flightId", "seatNumber")
+VALUES ('<flight-id-uuid>', '<seat-number>')
+RETURNING id;
+*/
 
     await ticket.update({ bookingId: bookings[0] });
 

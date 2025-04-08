@@ -21,6 +21,14 @@ export const getFlights = async (req, res) => {
         },
       ],
     });
+/*
+    SELECT Flights.*, Airlines.airlineLogo, Airlines.airlineName
+FROM Flights
+JOIN Airlines ON Flights.airlineId = Airlines.id
+WHERE Flights.from = 'provided_from'
+AND Flights.to = 'provided_to'
+AND Flights.departDate = 'provided_departDate';
+*/
 
     if (flights.length === 0) {
       return res.status(404).json({ status: false, message: "No flights found" });
@@ -46,11 +54,15 @@ export const addAirline = async (req, res) => {
   try {
     const existingAirline = await Airline.findOne({ where: { airlineName } });
 
+    //SELECT * FROM Airlines WHERE airlineName ='provided_airlineName' LIMIT 1;
+
     if (existingAirline) {
       return res.status(400).json({ message: "Airline already exists" });
     }
 
     await Airline.create({ airlineLogo, airlineName });
+
+    //INSERT INTO Airlines (airlineLogo, airlineName) VALUES ('provided_airlineLogo', 'provided_airlineName');
 
     res.status(201).json({ message: "Airline added successfully" });
   } catch (error) {
@@ -74,6 +86,9 @@ export const addFlight = async (req, res) => {
 
   try {
     const airline = await Airline.findByPk(airlineUid);
+
+    //SELECT * FROM Airlines WHERE id = provided_airlineUid LIMIT 1;
+   
     if (!airline) {
       return res.status(404).json({ message: "Airline not found" });
     }
@@ -89,6 +104,14 @@ export const addFlight = async (req, res) => {
       price,
     });
 
+    /*
+    INSERT INTO Flights (airlineId, `from`, `to`, departDate,
+arriveDate, departTime, arriveTime, price)
+VALUES (provided_airlineId, 'provided_from', 'provided_to',
+'provided_departDate', 'provided_arriveDate',
+'provided_departTime', 'provided_arriveTime',
+provided_price);
+*/
     res.status(201).json({
       message: "Flight added successfully",
       flightId: newFlight.id,
@@ -117,6 +140,12 @@ export const getSingleFlight = async (req, res) => {
       ],
     });
 
+    /*
+    SELECT Flights.*, Airlines.airlineLogo, Airlines.airlineName
+FROM Flights
+JOIN Airlines ON Flights.airlineId = Airlines.id
+WHERE Flights.id = provided_id;
+*/
     if (!flight) {
       return res
         .status(404)
@@ -140,6 +169,9 @@ export const getSingleFlight = async (req, res) => {
 export const getAllAirlines = async (req, res) => {
   try {
     const airlines = await Airline.findAll();
+
+    //SELECT * FROM Airlines;
+
     res.status(200).json(airlines);
   } catch (error) {
     console.error("Error fetching airlines:", error);
